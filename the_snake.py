@@ -47,7 +47,7 @@ SPEED_STEP = 5
 # Настройка игрового окна:
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
-# Заголовок окна игрового поля (с подсказками по управлению):
+# Заголовок окна игрового поля (с подсказками по управлени):
 pg.display.set_caption(
     'Змейка | Стрелки: движение | + / - : скорость | Esc: выход'
 )
@@ -66,6 +66,10 @@ class GameObject:
             SCREEN_HEIGHT // 2 // GRID_SIZE * GRID_SIZE,
         )
         self.body_color = body_color
+
+    def __str__(self):
+        """Магический метод"""
+        return f'{self.__class__.__name__} на позиции {self.position}'
 
     def draw_cell(self, position, color, border_color=None):
         """Вспомогательный метод для отрисовки одной клетки."""
@@ -87,23 +91,17 @@ class Apple(GameObject):
     def __init__(self, occupied_positions=None):
         """Создаёт яблоко в случайной позиции."""
         super().__init__(APPLE_COLOR)
-        if occupied_positions is None:
-            occupied_positions = []
-        self.randomize_position(occupied_positions)
+        # Используем or [] для передачи пустого списка по умолчанию
+        self.randomize_position(occupied_positions or [])
 
     def randomize_position(self, occupied_positions):
         """Устанавливает случайную позицию, не занятую змейкой."""
-        if len(occupied_positions) >= GRID_WIDTH * GRID_HEIGHT:
-            self.position = (-GRID_SIZE, -GRID_SIZE)
-            return
-
         while True:
-            new_position = (
+            self.position = (
                 randint(0, GRID_WIDTH - 1) * GRID_SIZE,
                 randint(0, GRID_HEIGHT - 1) * GRID_SIZE,
             )
-            if new_position not in occupied_positions:
-                self.position = new_position
+            if self.position not in occupied_positions:
                 break
 
     def draw(self):
@@ -118,6 +116,7 @@ class Snake(GameObject):
         """Инициализирует змейку в центре поля."""
         super().__init__(SNAKE_COLOR)
         self.reset()
+        self.direction = RIGHT
 
     def get_head_position(self):
         """Возвращает координаты головы змейки."""
@@ -211,7 +210,10 @@ def main():
         if snake.get_head_position() == apple.position:
             snake.length += 1
             apple.randomize_position(snake.positions)
-        elif snake.get_head_position() in snake.positions[1:]:
+        # Проверяем, укусила ли змейка себя (только если длина больше 4). 
+        elif len(snake.positions) > 4 and (
+            snake.get_head_position() in snake.positions[1:]
+        ):
             snake.reset()
             screen.fill(BOARD_BACKGROUND_COLOR)
             apple.randomize_position(snake.positions)

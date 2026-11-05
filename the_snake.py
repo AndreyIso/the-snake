@@ -210,7 +210,7 @@ def main():
         if snake.get_head_position() == apple.position:
             snake.length += 1
             apple.randomize_position(snake.positions)
-        # Проверяем, укусила ли змейка себя (только если длина больше 4). 
+        # Проверяем, укусила ли змейка себя (только если длина больше 4).
         elif len(snake.positions) > 4 and (
             snake.get_head_position() in snake.positions[1:]
         ):
